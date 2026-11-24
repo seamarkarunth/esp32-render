@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My ESP32 Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #101827;
+      color: white;
+      max-width: 700px;
+      margin: 60px auto;
+      padding: 20px;
+    }
+    .card {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>My ESP32 Dashboard</h1>
+
+  <div class="card">
+    <p>Device: <strong id="device">—</strong></p>
+    <p>Connection: <strong id="connection">—</strong></p>
+    <p>LED: <strong id="led">—</strong></p>
+    <p id="message" role="status">Loading server data...</p>
+  </div>
+
+  <script>
+    async function updateStatus() {
+      try {
+        const response = await fetch("/api/status", {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error("Status request failed");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("device").textContent = data.device;
+        document.getElementById("connection").textContent =
+          data.connected ? "Online" : "Offline";
+        document.getElementById("led").textContent = data.led;
+        document.getElementById("message").textContent = data.message;
+      } catch (error) {
+        document.getElementById("connection").textContent = "Unknown";
+        document.getElementById("led").textContent = "—";
+        document.getElementById("message").textContent =
+          "Cannot reach the server. Retrying...";
+      } finally {
+        setTimeout(updateStatus, 3000);
+      }
+    }
+
+    updateStatus();
+  </script>
+</body>
+</html>
